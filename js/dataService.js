@@ -37,9 +37,13 @@ export class DataService {
     }
 
     try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
+      let data = await response.json();
+      // Normalize: API may return bare array or { tasks: [...] }
+      if (Array.isArray(data)) {
+        data = { tasks: data };
+      }
       this.#validateTasks(data);
       this.#lastTasksData = data;
       this.#lastFetchTime = Date.now();
@@ -62,7 +66,7 @@ export class DataService {
     if (!url) return this.#lastLogsData;
 
     try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       this.#lastLogsData = data;
