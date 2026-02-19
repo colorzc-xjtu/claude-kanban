@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Task Kanban</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <h1 class="app-title">Claude Task Kanban</h1>
+      <nav class="view-tabs">
+        <button class="view-tab active" data-view="board">Board</button>
+        <button class="view-tab" data-view="calendar">Calendar</button>
+      </nav>
+    </div>
+    <div class="header-right">
+      <span class="last-updated" id="lastUpdated"></span>
+      <div class="connection-status" id="connectionStatus">
+        <span class="status-dot"></span>
+        <span class="status-text">Offline</span>
+      </div>
+      <button class="header-btn" id="btnRefresh" title="Refresh">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+      <button class="header-btn" id="btnTheme" title="Toggle theme">
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="header-btn" id="btnSettings" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Settings Panel -->
+  <aside class="settings-panel" id="settingsPanel">
+    <div class="settings-content">
+      <h3>Settings</h3>
+      <div class="settings-field">
+        <label for="inputTasksUrl">Tasks Data URL</label>
+        <input type="text" id="inputTasksUrl" placeholder="Google Apps Script URL or Drive File ID">
+        <small>Paste your Google Apps Script URL or Google Drive file ID</small>
+      </div>
+      <div class="settings-field">
+        <label for="inputLogsUrl">Daily Logs URL (optional)</label>
+        <input type="text" id="inputLogsUrl" placeholder="Google Apps Script URL or Drive File ID">
+        <small>For calendar daily notes. Leave empty to skip.</small>
+      </div>
+      <div class="settings-field">
+        <label for="inputRefreshInterval">Refresh Interval (seconds)</label>
+        <input type="number" id="inputRefreshInterval" value="30" min="5" max="300">
+      </div>
+      <div class="settings-actions">
+        <button class="btn btn-primary" id="btnSaveSettings">Save & Connect</button>
+        <button class="btn btn-secondary" id="btnLoadSample">Load Sample Data</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Board View -->
+  <main class="board-view active" id="boardView">
+    <div class="board-container">
+      <!-- Next Actions Column -->
+      <section class="board-section next-actions-section">
+        <div class="section-header">
+          <div class="section-title-row">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <h2>Next Actions</h2>
+          </div>
+          <span class="task-count" id="nextActionsCount">0</span>
+        </div>
+        <div class="column-cards" id="columnNextActions"></div>
+      </section>
+
+      <!-- Category Sections -->
+      <div class="categories-area">
+        <!-- Claude Cowork -->
+        <section class="board-section category-section" data-category="claude-cowork">
+          <div class="section-header">
+            <div class="section-title-row">
+              <span class="category-dot" style="background: #a855f7"></span>
+              <h2>Claude Cowork</h2>
+            </div>
+            <span class="task-count" id="coworkCount">0</span>
+          </div>
+          <div class="columns-row">
+            <div class="column" data-status="in-progress">
+              <h3 class="column-title"><span class="column-dot status-in-progress"></span>In Progress</h3>
+              <div class="column-cards" id="cowork-in-progress"></div>
+            </div>
+            <div class="column" data-status="pending">
+              <h3 class="column-title"><span class="column-dot status-pending"></span>Pending</h3>
+              <div class="column-cards" id="cowork-pending"></div>
+            </div>
+            <div class="column" data-status="completed">
+              <h3 class="column-title"><span class="column-dot status-completed"></span>Completed</h3>
+              <div class="column-cards" id="cowork-completed"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Claude Code -->
+        <section class="board-section category-section" data-category="claude-code">
+          <div class="section-header">
+            <div class="section-title-row">
+              <span class="category-dot" style="background: #3b82f6"></span>
+              <h2>Claude Code</h2>
+            </div>
+            <span class="task-count" id="codeCount">0</span>
+          </div>
+          <div class="columns-row">
+            <div class="column" data-status="in-progress">
+              <h3 class="column-title"><span class="column-dot status-in-progress"></span>In Progress</h3>
+              <div class="column-cards" id="code-in-progress"></div>
+            </div>
+            <div class="column" data-status="pending">
+              <h3 class="column-title"><span class="column-dot status-pending"></span>Pending</h3>
+              <div class="column-cards" id="code-pending"></div>
+            </div>
+            <div class="column" data-status="completed">
+              <h3 class="column-title"><span class="column-dot status-completed"></span>Completed</h3>
+              <div class="column-cards" id="code-completed"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Claude Chat -->
+        <section class="board-section category-section" data-category="claude-chat">
+          <div class="section-header">
+            <div class="section-title-row">
+              <span class="category-dot" style="background: #22c55e"></span>
+              <h2>Claude Chat</h2>
+            </div>
+            <span class="task-count" id="chatCount">0</span>
+          </div>
+          <div class="columns-row">
+            <div class="column" data-status="in-progress">
+              <h3 class="column-title"><span class="column-dot status-in-progress"></span>In Progress</h3>
+              <div class="column-cards" id="chat-in-progress"></div>
+            </div>
+            <div class="column" data-status="pending">
+              <h3 class="column-title"><span class="column-dot status-pending"></span>Pending</h3>
+              <div class="column-cards" id="chat-pending"></div>
+            </div>
+            <div class="column" data-status="completed">
+              <h3 class="column-title"><span class="column-dot status-completed"></span>Completed</h3>
+              <div class="column-cards" id="chat-completed"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Calendar View -->
+  <main class="calendar-view" id="calendarView">
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <button class="header-btn" id="btnPrevMonth" title="Previous month">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h2 class="calendar-month-title" id="calendarMonthTitle">February 2026</h2>
+        <button class="header-btn" id="btnNextMonth" title="Next month">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid">
+        <div class="calendar-weekday">Mon</div>
+        <div class="calendar-weekday">Tue</div>
+        <div class="calendar-weekday">Wed</div>
+        <div class="calendar-weekday">Thu</div>
+        <div class="calendar-weekday">Fri</div>
+        <div class="calendar-weekday">Sat</div>
+        <div class="calendar-weekday">Sun</div>
+        <!-- Day cells rendered by JS -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Calendar Day Detail Modal -->
+  <div class="modal-overlay" id="dayDetailModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalDayTitle">February 19, 2026</h3>
+        <button class="modal-close" id="btnCloseModal">&times;</button>
+      </div>
+      <div class="modal-body" id="modalDayBody">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p>Loading tasks...</p>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
